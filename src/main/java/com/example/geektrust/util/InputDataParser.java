@@ -19,9 +19,9 @@ public class InputDataParser {
 
     public InputDataParser(UseCase useCase) {
         commandToUseCaseMap = Map.ofEntries(
-                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("CURRENT_PORTFOLIO", useCase::setCurrentPortfolio),
-                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("CALCULATE_OVERLAP", useCase::printFundOverlap),
-                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("ADD_STOCK", useCase::addStockToMutualFund)
+                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("ALLOT_WATER", useCase::allocateWater),
+                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("ADD_GUESTS", useCase::addGuests),
+                new AbstractMap.SimpleImmutableEntry<String, Consumer<String>>("BILL", useCase::calculateBill)
         );
     }
 

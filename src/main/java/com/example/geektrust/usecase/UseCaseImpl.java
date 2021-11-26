@@ -1,69 +1,68 @@
 package com.example.geektrust.usecase;
 
-import com.example.geektrust.util.StockOverlapCalculator;
-import com.example.geektrust.datastore.DataStore;
+import com.example.geektrust.models.ApartmentWaterManager;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class UseCaseImpl implements UseCase{
-
-    private String[] mutualFunds;
-    private DataStore stocksDataStore;
-
-    private final StockOverlapCalculator stockOverlapCalculator = new StockOverlapCalculator();
+    private final int NUM_DAYS_IN_MONTH = 30;
+//    private Map<Integer, Integer> apartmentPersonCount;
+    private int waterInLitresPerPerson;
+    private ApartmentWaterManager apartmentWaterManager;
 
     public UseCaseImpl() {}
 
-    public UseCaseImpl(DataStore stocksDataStore) {
-        this.stocksDataStore = stocksDataStore;
+    public UseCaseImpl(int waterInLitrePerPerson) {
+        this.waterInLitresPerPerson = waterInLitrePerPerson;
     }
 
-    public String[] getMutualFunds() {
-        return mutualFunds;
-    }
-
-    @Override
-    public void setCurrentPortfolio(String command) {
-        var args = command.split(" ");
-        this.mutualFunds = Arrays.copyOfRange(args, 1, args.length);
+    public ApartmentWaterManager getApartmentWaterManager() {
+        return apartmentWaterManager;
     }
 
     @Override
-    public void printFundOverlap(String command) {
+    public void allocateWater(String command) {
         var args = getFunctionArguments(command);
+        assert args.length == 2;
 
+        var numOfBedrooms = args[0];
+
+        var waterRatio = args[1];
+        var corporateWaterShare= Integer.parseInt(waterRatio.split(":")[0]);
+        var borewellWaterShare= Integer.parseInt(waterRatio.split(":")[1]);
+        var corporationWaterPercent = (float)corporateWaterShare*100/(corporateWaterShare+borewellWaterShare);
+
+        this.apartmentWaterManager = new ApartmentWaterManager(
+                Integer.parseInt(numOfBedrooms),
+                corporationWaterPercent,
+                waterInLitresPerPerson
+        );
+    }
+
+    @Override
+    public void addGuests(String command) {
+        var args = getFunctionArguments(command);
         assert args.length == 1;
-        var fundToCompare = args[0];
 
-        try {
-            Arrays.stream(this.mutualFunds).forEach(fund -> {
-                var overlapPercent = stockOverlapCalculator.calculateOverlap(
-                        stocksDataStore.getStocksInMutualFund(fund),
-                        stocksDataStore.getStocksInMutualFund(fundToCompare)
-                );
-                if(Double.parseDouble(overlapPercent) > (double)0) {
-                    System.out.println(fundToCompare + " " + fund + " " + overlapPercent + "%");
-                }
-            });
-        } catch (RuntimeException exception) {
-            if(("FUND_NOT_FOUND").equals(exception.getMessage())) {
-                System.out.println(exception.getMessage());
-            } else {
-                throw exception;
-            }
-        };
+        var newGuestCount = Integer.parseInt(args[0]);
+        this.apartmentWaterManager.addGuests(newGuestCount);
     }
 
     @Override
-    public void addStockToMutualFund(String command) {
+    public void calculateBill(String command) {
         var args = getFunctionArguments(command);
-        var fundName = args[0];
-        var stockName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        stocksDataStore.addStockToMutualFund(fundName, stockName);
+        assert args.length == 0;
+
+        var totalWaterConsumption = apartmentWaterManager.getTotalWaterConsumptionInMonth(NUM_DAYS_IN_MONTH);
+
+        var totalCost = apartmentWaterManager.getTotalBillForDays(NUM_DAYS_IN_MONTH);
+        System.out.println(totalWaterConsumption + " " + (int)Math.ceil(totalCost));
     }
 
     private String[] getFunctionArguments(String command) {
         var args = command.split(" ");
         return Arrays.copyOfRange(args, 1, args.length);
     }
+
 }

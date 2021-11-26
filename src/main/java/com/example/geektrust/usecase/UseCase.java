@@ -1,9 +1,10 @@
 package com.example.geektrust.usecase;
 
 public interface UseCase {
-    void setCurrentPortfolio(String command);
 
-    void printFundOverlap(String command);
+    void allocateWater(String command);
 
-    void addStockToMutualFund(String command);
+    void addGuests(String command);
+
+    void calculateBill(String command);
 }
